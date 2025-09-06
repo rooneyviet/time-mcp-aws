@@ -111,3 +111,12 @@ logs
 
 # Local configuration files
 config.local.*
+
+# CDK
+infrastructure/lib/*.js
+infrastructure/lib/*.d.ts
+infrastructure/bin/*.js
+infrastructure/bin/*.d.ts
+infrastructure/cdk.out/
+infrastructure/*.js
+infrastructure/*.d.ts

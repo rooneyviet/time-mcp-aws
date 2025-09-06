@@ -74,7 +74,7 @@ export class TimeMcpStack extends cdk.Stack {
             beforeInstall: () => [],
             beforeBundling: () => [],
             afterBundling: (inputDir: string, outputDir: string) => {
-              return [`cp ${inputDir}/../lambda/run.sh ${outputDir}`];
+              return [`cp ${inputDir}/../src/run.sh ${outputDir}`];
             },
           },
         },
