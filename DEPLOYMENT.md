@@ -13,38 +13,39 @@ This guide explains how to deploy your Time MCP Server to AWS Lambda with API Ga
 
 All commands should be run from the **project root directory** unless specified:
 
-| Command | Description | Directory |
-|---------|-------------|-----------|
-| `pnpm run build` | Build main TypeScript app | Root |
-| `pnpm run cdk:install` | Install CDK dependencies | Root |
-| `pnpm run cdk:build` | Build CDK infrastructure code | Root |
-| `pnpm run cdk:synth` | Generate CloudFormation templates (dry run) | Root |
-| `pnpm run cdk:deploy` | Deploy to AWS | Root |
-| `pnpm run cdk:destroy` | Destroy AWS resources | Root |
-| `pnpm run deploy:all` | Full deployment (build + cdk:build + cdk:deploy) | Root |
+| Command                | Description                                      | Directory |
+| ---------------------- | ------------------------------------------------ | --------- |
+| `pnpm run build`       | Build main TypeScript app                        | Root      |
+| `pnpm run cdk:install` | Install CDK dependencies                         | Root      |
+| `pnpm run cdk:build`   | Build CDK infrastructure code                    | Root      |
+| `pnpm run cdk:synth`   | Generate CloudFormation templates (dry run)      | Root      |
+| `pnpm run cdk:deploy`  | Deploy to AWS                                    | Root      |
+| `pnpm run cdk:destroy` | Destroy AWS resources                            | Root      |
+| `pnpm run deploy:all`  | Full deployment (build + cdk:build + cdk:deploy) | Root      |
 
 ## Quick Deployment (Recommended)
 
 **📁 Start in project root directory**
 
 ### 1. Install Dependencies
+
 ```bash
 # Install main project dependencies
 pnpm install
 
-# Install CDK infrastructure dependencies  
+# Install CDK infrastructure dependencies
 pnpm run cdk:install
 ```
 
 ### 2. Bootstrap CDK (First time only)
+
 ```bash
 pnpm run cdk:synth  # Generate templates first
-cd infrastructure
-pnpm cdk bootstrap
-cd ..  # Return to root
+pnpm run cdk:bootstrap
 ```
 
 ### 3. Deploy Everything
+
 ```bash
 # One-command deployment (builds everything and deploys)
 pnpm run deploy:all
@@ -57,21 +58,25 @@ pnpm run deploy:all
 If you prefer more control or debugging:
 
 ### 1. Build Application
+
 ```bash
 pnpm run build
 ```
 
 ### 2. Build CDK Infrastructure
+
 ```bash
 pnpm run cdk:build
 ```
 
 ### 3. Preview Changes (Optional)
+
 ```bash
 pnpm run cdk:synth  # View generated CloudFormation
 ```
 
 ### 4. Deploy to AWS
+
 ```bash
 pnpm run cdk:deploy
 ```
@@ -81,6 +86,7 @@ pnpm run cdk:deploy
 **📁 Always work from project root directory**
 
 ### Making Changes to Your MCP Server
+
 ```bash
 # 1. Edit your code in src/
 # 2. Test locally first
@@ -89,20 +95,6 @@ pnpm run start
 
 # 3. Deploy changes
 pnpm run deploy:all
-```
-
-### Making Changes to AWS Infrastructure  
-```bash
-# 1. Edit infrastructure/lib/time-mcp-stack.ts
-# 2. Preview changes
-pnpm run cdk:synth
-
-# 3. See what will change
-pnpm run cdk:build
-cd infrastructure && pnpm cdk diff && cd ..
-
-# 4. Deploy changes
-pnpm run cdk:deploy
 ```
 
 ### When to Use Each Command
@@ -115,8 +107,9 @@ pnpm run cdk:deploy
 ## Deployment Outputs
 
 After successful deployment, CDK will output important values:
+
 - **UserPoolId**: Cognito User Pool ID
-- **UserPoolClientId**: Cognito User Pool Client ID  
+- **UserPoolClientId**: Cognito User Pool Client ID
 - **ApiUrl**: HTTP API Gateway base URL
 - **McpEndpoint**: Full MCP endpoint URL
 - **HealthEndpoint**: Health check URL (no auth required)
@@ -138,6 +131,7 @@ aws cognito-idp admin-create-user \
 ```
 
 Set permanent password:
+
 ```bash
 aws cognito-idp admin-set-user-password \
   --user-pool-id <USER_POOL_ID> \
@@ -170,6 +164,7 @@ chmod +x authenticate.sh
 ```
 
 Replace the placeholders and run:
+
 ```bash
 ./authenticate.sh
 ```
@@ -230,7 +225,7 @@ curl -X POST https://your-api-id.execute-api.us-east-1.amazonaws.com/mcp \
 # View deployed resources (from root)
 pnpm run cdk:synth
 
-# Show differences before deploy (from root)  
+# Show differences before deploy (from root)
 pnpm run cdk:build  # Build first
 cd infrastructure
 pnpm cdk diff

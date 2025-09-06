@@ -44,10 +44,7 @@ export class TimeMcpStack extends cdk.Stack {
         userPoolClientName: "time-mcp-client",
         authFlows: {
           adminUserPassword: true,
-          userPassword: true,
-          userSrp: true,
         },
-        generateSecret: false,
       }
     );
 
@@ -95,18 +92,6 @@ export class TimeMcpStack extends cdk.Stack {
     const httpApi = new apigatewayv2.HttpApi(this, "TimeMcpApi", {
       apiName: "time-mcp-api",
       description: "Time MCP Server HTTP API",
-      corsPreflight: {
-        allowCredentials: false,
-        allowHeaders: ["Content-Type", "Authorization"],
-        allowMethods: [
-          apigatewayv2.CorsHttpMethod.GET,
-          apigatewayv2.CorsHttpMethod.POST,
-          apigatewayv2.CorsHttpMethod.DELETE,
-          apigatewayv2.CorsHttpMethod.OPTIONS,
-        ],
-        allowOrigins: ["*"],
-        maxAge: cdk.Duration.days(1),
-      },
       defaultIntegration: new apigatewayv2Integrations.HttpLambdaIntegration(
         "TimeMcpLambdaIntegration",
         timeMcpHandler
@@ -116,7 +101,6 @@ export class TimeMcpStack extends cdk.Stack {
         userPool,
         {
           userPoolClients: [userPoolClient],
-          identitySource: ["$request.header.Authorization"],
         }
       ),
     });

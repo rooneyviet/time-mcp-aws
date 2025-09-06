@@ -11,6 +11,7 @@
     "clean": "rm -rf dist",
     "cdk:install": "cd infrastructure && pnpm install",
     "cdk:build": "cd infrastructure && pnpm run build",
+    "cdk:bootstrap": "cd infrastructure && pnpm run bootstrap",
     "cdk:deploy": "cd infrastructure && pnpm run deploy",
     "cdk:destroy": "cd infrastructure && pnpm run destroy",
     "cdk:synth": "cd infrastructure && pnpm run synth",
