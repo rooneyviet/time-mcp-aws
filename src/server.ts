@@ -17,9 +17,8 @@ export async function createMcpServer(localTimezone: string = 'Asia/Tokyo', port
   // CORS configuration for browser-based clients
   app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, mcp-session-id');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     res.header('Access-Control-Allow-Methods', 'POST, GET, DELETE, OPTIONS');
-    res.header('Access-Control-Expose-Headers', 'Mcp-Session-Id');
     
     if (req.method === 'OPTIONS') {
       res.sendStatus(200);

@@ -1,0 +1,506 @@
+{
+ "Resources": {
+  "TimeMcpUserPoolAD0D3E97": {
+   "Type": "AWS::Cognito::UserPool",
+   "Properties": {
+    "AccountRecoverySetting": {
+     "RecoveryMechanisms": [
+      {
+       "Name": "verified_email",
+       "Priority": 1
+      }
+     ]
+    },
+    "AdminCreateUserConfig": {
+     "AllowAdminCreateUserOnly": false
+    },
+    "AutoVerifiedAttributes": [
+     "email"
+    ],
+    "EmailVerificationMessage": "The verification code to your new account is {####}",
+    "EmailVerificationSubject": "Verify your new account",
+    "Policies": {
+     "PasswordPolicy": {
+      "MinimumLength": 8,
+      "RequireLowercase": true,
+      "RequireNumbers": true,
+      "RequireSymbols": true,
+      "RequireUppercase": true
+     }
+    },
+    "Schema": [
+     {
+      "Mutable": true,
+      "Name": "email",
+      "Required": true
+     }
+    ],
+    "SmsVerificationMessage": "The verification code to your new account is {####}",
+    "UserPoolName": "time-mcp-user-pool",
+    "UsernameConfiguration": {
+     "CaseSensitive": false
+    },
+    "VerificationMessageTemplate": {
+     "DefaultEmailOption": "CONFIRM_WITH_CODE",
+     "EmailMessage": "The verification code to your new account is {####}",
+     "EmailSubject": "Verify your new account",
+     "SmsMessage": "The verification code to your new account is {####}"
+    }
+   },
+   "UpdateReplacePolicy": "Retain",
+   "DeletionPolicy": "Retain",
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpUserPool/Resource"
+   }
+  },
+  "TimeMcpUserPoolClient919406B1": {
+   "Type": "AWS::Cognito::UserPoolClient",
+   "Properties": {
+    "AllowedOAuthFlows": [
+     "implicit",
+     "code"
+    ],
+    "AllowedOAuthFlowsUserPoolClient": true,
+    "AllowedOAuthScopes": [
+     "profile",
+     "phone",
+     "email",
+     "openid",
+     "aws.cognito.signin.user.admin"
+    ],
+    "CallbackURLs": [
+     "https://example.com"
+    ],
+    "ClientName": "time-mcp-client",
+    "ExplicitAuthFlows": [
+     "ALLOW_USER_PASSWORD_AUTH",
+     "ALLOW_ADMIN_USER_PASSWORD_AUTH",
+     "ALLOW_USER_SRP_AUTH",
+     "ALLOW_REFRESH_TOKEN_AUTH"
+    ],
+    "GenerateSecret": false,
+    "SupportedIdentityProviders": [
+     "COGNITO"
+    ],
+    "UserPoolId": {
+     "Ref": "TimeMcpUserPoolAD0D3E97"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpUserPoolClient/Resource"
+   }
+  },
+  "TimeMcpHandlerServiceRole192D442B": {
+   "Type": "AWS::IAM::Role",
+   "Properties": {
+    "AssumeRolePolicyDocument": {
+     "Statement": [
+      {
+       "Action": "sts:AssumeRole",
+       "Effect": "Allow",
+       "Principal": {
+        "Service": "lambda.amazonaws.com"
+       }
+      }
+     ],
+     "Version": "2012-10-17"
+    },
+    "ManagedPolicyArns": [
+     {
+      "Fn::Join": [
+       "",
+       [
+        "arn:",
+        {
+         "Ref": "AWS::Partition"
+        },
+        ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+       ]
+      ]
+     }
+    ]
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpHandler/ServiceRole/Resource"
+   }
+  },
+  "TimeMcpHandlerA3756F10": {
+   "Type": "AWS::Lambda::Function",
+   "Properties": {
+    "Architectures": [
+     "x86_64"
+    ],
+    "Code": {
+     "S3Bucket": {
+      "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-us-east-1"
+     },
+     "S3Key": "6edc73ba64ce6118d502aa4a8278a17fe88643b00aea2065b73487065a41c390.zip"
+    },
+    "Environment": {
+     "Variables": {
+      "AWS_LAMBDA_EXEC_WRAPPER": "/opt/bootstrap",
+      "RUST_LOG": "info",
+      "DEFAULT_TIMEZONE": "Asia/Tokyo",
+      "PORT": "8080"
+     }
+    },
+    "Handler": "run.sh",
+    "Layers": [
+     "arn:aws:lambda:us-east-1:753240598075:layer:LambdaAdapterLayerX86:25"
+    ],
+    "Role": {
+     "Fn::GetAtt": [
+      "TimeMcpHandlerServiceRole192D442B",
+      "Arn"
+     ]
+    },
+    "Runtime": "nodejs20.x",
+    "Timeout": 180
+   },
+   "DependsOn": [
+    "TimeMcpHandlerServiceRole192D442B"
+   ],
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpHandler/Resource",
+    "aws:asset:path": "/Users/barney/Documents/Barney/Programming/Projects/Private/AWS/lambda/mcp/time-mcp-aws/infrastructure",
+    "aws:asset:is-bundled": true,
+    "aws:asset:property": "Code"
+   }
+  },
+  "TimeMcpApi4385CDEC": {
+   "Type": "AWS::ApiGatewayV2::Api",
+   "Properties": {
+    "CorsConfiguration": {
+     "AllowCredentials": false,
+     "AllowHeaders": [
+      "Content-Type",
+      "Authorization"
+     ],
+     "AllowMethods": [
+      "GET",
+      "POST",
+      "DELETE",
+      "OPTIONS"
+     ],
+     "AllowOrigins": [
+      "*"
+     ],
+     "MaxAge": 86400
+    },
+    "Description": "Time MCP Server HTTP API",
+    "Name": "time-mcp-api",
+    "ProtocolType": "HTTP"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/Resource"
+   }
+  },
+  "TimeMcpApiDefaultRouteTimeMcpLambdaIntegrationD2019929": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "TimeMcpApi4385CDEC"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "TimeMcpHandlerA3756F10",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/DefaultRoute/TimeMcpLambdaIntegration/Resource"
+   }
+  },
+  "TimeMcpApiDefaultRouteTimeMcpLambdaIntegrationPermission5DD07E20": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "TimeMcpHandlerA3756F10",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:us-east-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "TimeMcpApi4385CDEC"
+       },
+       "/*/*"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/DefaultRoute/TimeMcpLambdaIntegration-Permission"
+   }
+  },
+  "TimeMcpApiDefaultRouteE6851486": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "TimeMcpApi4385CDEC"
+    },
+    "AuthorizationType": "JWT",
+    "AuthorizerId": {
+     "Ref": "TimeMcpApiTimeMcpAuthorizerA03DF7B4"
+    },
+    "RouteKey": "$default",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "TimeMcpApiDefaultRouteTimeMcpLambdaIntegrationD2019929"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/DefaultRoute/Resource"
+   }
+  },
+  "TimeMcpApiTimeMcpAuthorizerA03DF7B4": {
+   "Type": "AWS::ApiGatewayV2::Authorizer",
+   "Properties": {
+    "ApiId": {
+     "Ref": "TimeMcpApi4385CDEC"
+    },
+    "AuthorizerType": "JWT",
+    "IdentitySource": [
+     "$request.header.Authorization"
+    ],
+    "JwtConfiguration": {
+     "Audience": [
+      {
+       "Ref": "TimeMcpUserPoolClient919406B1"
+      }
+     ],
+     "Issuer": {
+      "Fn::Join": [
+       "",
+       [
+        "https://cognito-idp.us-east-1.amazonaws.com/",
+        {
+         "Ref": "TimeMcpUserPoolAD0D3E97"
+        }
+       ]
+      ]
+     }
+    },
+    "Name": "TimeMcpAuthorizer"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/TimeMcpAuthorizer/Resource"
+   }
+  },
+  "TimeMcpApiDefaultStage4FE149FA": {
+   "Type": "AWS::ApiGatewayV2::Stage",
+   "Properties": {
+    "ApiId": {
+     "Ref": "TimeMcpApi4385CDEC"
+    },
+    "AutoDeploy": true,
+    "StageName": "$default"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/DefaultStage/Resource"
+   }
+  },
+  "TimeMcpApiGEThealthHealthCheckIntegration145471B7": {
+   "Type": "AWS::ApiGatewayV2::Integration",
+   "Properties": {
+    "ApiId": {
+     "Ref": "TimeMcpApi4385CDEC"
+    },
+    "IntegrationType": "AWS_PROXY",
+    "IntegrationUri": {
+     "Fn::GetAtt": [
+      "TimeMcpHandlerA3756F10",
+      "Arn"
+     ]
+    },
+    "PayloadFormatVersion": "2.0"
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/GET--health/HealthCheckIntegration/Resource"
+   }
+  },
+  "TimeMcpApiGEThealthHealthCheckIntegrationPermissionC52FF22F": {
+   "Type": "AWS::Lambda::Permission",
+   "Properties": {
+    "Action": "lambda:InvokeFunction",
+    "FunctionName": {
+     "Fn::GetAtt": [
+      "TimeMcpHandlerA3756F10",
+      "Arn"
+     ]
+    },
+    "Principal": "apigateway.amazonaws.com",
+    "SourceArn": {
+     "Fn::Join": [
+      "",
+      [
+       "arn:aws:execute-api:us-east-1:",
+       {
+        "Ref": "AWS::AccountId"
+       },
+       ":",
+       {
+        "Ref": "TimeMcpApi4385CDEC"
+       },
+       "/*/*/health"
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/GET--health/HealthCheckIntegration-Permission"
+   }
+  },
+  "TimeMcpApiGEThealth67E647D5": {
+   "Type": "AWS::ApiGatewayV2::Route",
+   "Properties": {
+    "ApiId": {
+     "Ref": "TimeMcpApi4385CDEC"
+    },
+    "AuthorizationType": "JWT",
+    "AuthorizerId": {
+     "Ref": "TimeMcpApiTimeMcpAuthorizerA03DF7B4"
+    },
+    "RouteKey": "GET /health",
+    "Target": {
+     "Fn::Join": [
+      "",
+      [
+       "integrations/",
+       {
+        "Ref": "TimeMcpApiGEThealthHealthCheckIntegration145471B7"
+       }
+      ]
+     ]
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/TimeMcpApi/GET--health/Resource"
+   }
+  },
+  "CDKMetadata": {
+   "Type": "AWS::CDK::Metadata",
+   "Properties": {
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/12QwW7CMBBEv4W7syWhPwCRqnJpUVDPaEk26YbEjrxrUBvl3yuHAlVPb2Z3PLKdQZY+w3KBF0nK6pR0fIRxr1ieDF7kMJausawOxg8hv3OuM3lt7/om8o7J6t/VdTKZDvtjhQfrKmoF3ma8BFsqO2sYexgL11E8GTkZWR1QhFRgHWFkBZtQnkg3KPTbBmNe23tJXtsd+Z5F2NnJ4MANKl3w65zB+Ko6rAeOoYhoCxeUZrW1So3HW8s/+8itg346z9/k556Hi8u9YjPffxbTZAoSF3xJZn5AnLJtYuA96BB0MvEvoJWnc5ZBmsJy0Qpz4oNV7gmKK38AiN2bJ5gBAAA="
+   },
+   "Metadata": {
+    "aws:cdk:path": "TimeMcpStack/CDKMetadata/Default"
+   }
+  }
+ },
+ "Outputs": {
+  "UserPoolId": {
+   "Description": "Cognito User Pool ID",
+   "Value": {
+    "Ref": "TimeMcpUserPoolAD0D3E97"
+   }
+  },
+  "UserPoolClientId": {
+   "Description": "Cognito User Pool Client ID",
+   "Value": {
+    "Ref": "TimeMcpUserPoolClient919406B1"
+   }
+  },
+  "ApiUrl": {
+   "Description": "HTTP API Gateway endpoint URL",
+   "Value": {
+    "Fn::GetAtt": [
+     "TimeMcpApi4385CDEC",
+     "ApiEndpoint"
+    ]
+   }
+  },
+  "McpEndpoint": {
+   "Description": "MCP Server endpoint URL",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      {
+       "Fn::GetAtt": [
+        "TimeMcpApi4385CDEC",
+        "ApiEndpoint"
+       ]
+      },
+      "/mcp"
+     ]
+    ]
+   }
+  },
+  "HealthEndpoint": {
+   "Description": "Health check endpoint URL (no auth required)",
+   "Value": {
+    "Fn::Join": [
+     "",
+     [
+      {
+       "Fn::GetAtt": [
+        "TimeMcpApi4385CDEC",
+        "ApiEndpoint"
+       ]
+      },
+      "/health"
+     ]
+    ]
+   }
+  },
+  "Region": {
+   "Description": "AWS Region",
+   "Value": "us-east-1"
+  }
+ },
+ "Parameters": {
+  "BootstrapVersion": {
+   "Type": "AWS::SSM::Parameter::Value<String>",
+   "Default": "/cdk-bootstrap/hnb659fds/version",
+   "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]"
+  }
+ },
+ "Rules": {
+  "CheckBootstrapVersion": {
+   "Assertions": [
+    {
+     "Assert": {
+      "Fn::Not": [
+       {
+        "Fn::Contains": [
+         [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+         ],
+         {
+          "Ref": "BootstrapVersion"
+         }
+        ]
+       }
+      ]
+     },
+     "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI."
+    }
+   ]
+  }
+ }
+}
