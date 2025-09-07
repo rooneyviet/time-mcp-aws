@@ -1,26 +1,26 @@
 #!/bin/bash
 
 # Description:
-# SSO ログインした AWS の認証情報をもとに ~/.aws/credentials ファイルを更新する。
+# Updates the ~/.aws/credentials file based on AWS authentication information from SSO login.
 
 set -e -u -o pipefail
 echo "Starting script..."
 
-# jq コマンドが必要なので存在確認
+# Check if jq command exists as it's required
 if ! command -v jq > /dev/null ; then
   echo "jq command is required." 1>&2
   exit 1
 fi
 echo "jq command found."
 
-# 事前に SSO ログインしたプロファイルを AWS_PROFILE という名前で設定済みであることを確認
+# Verify that the SSO-logged-in profile has been set with the name AWS_PROFILE in advance
 if [ -z "${AWS_PROFILE:+UNDEF}" ]; then
   echo "AWS_PROFILE environment variable must be defined." 1>&2
   exit 1
 fi
 echo "AWS_PROFILE is set to: ${AWS_PROFILE}"
 
-# SSO のログイン情報を取得
+# Get SSO login information
 # Add '|| true' to prevent exit on error if a value is not found
 echo "Getting SSO configuration..."
 SSO_ACCOUNT_ID=$(aws configure get sso_account_id --profile "${AWS_PROFILE}" || true)
@@ -68,7 +68,7 @@ if [ -z "${SSO_ACCESS_TOKEN}" ]; then
 fi
 echo "SSO_ACCESS_TOKEN found."
 
-# ログイン情報を取得
+# Get login credentials
 echo "Getting role credentials..."
 CREDENTIALS=$(aws sso get-role-credentials \
   --account-id "${SSO_ACCOUNT_ID}" \
@@ -83,7 +83,7 @@ AWS_SECRET_ACCESS_KEY=$(echo "${CREDENTIALS}" | jq -r '.roleCredentials.secretAc
 AWS_SESSION_TOKEN=$(echo "${CREDENTIALS}" | jq -r '.roleCredentials.sessionToken')
 
 echo "Updating ~/.aws/credentials..."
-# ~/.aws/credentials ファイルへ反映
+# Apply to ~/.aws/credentials file
 aws configure set aws_access_key_id "${AWS_ACCESS_KEY_ID}" --profile "${AWS_PROFILE}"
 aws configure set aws_secret_access_key "${AWS_SECRET_ACCESS_KEY}" --profile "${AWS_PROFILE}"
 aws configure set aws_session_token "${AWS_SESSION_TOKEN}" --profile "${AWS_PROFILE}"
